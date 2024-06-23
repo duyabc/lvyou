@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.dao.SetMealDao">
+    <insert id="addSetMeal" useGeneratedKeys="true" keyProperty="id">
+        insert into t_setmeal (name, code, helpCode, sex, age, price, remark, attention, img)
+        values (#{name}, #{code}, #{helpCode}, #{sex}, #{age}, #{price}, #{remark}, #{attention}, #{img});
+    </insert>
+    <insert id="setSetMealAndTravelGroup">
+        insert into t_setmeal_travelgroup (setmeal_id, travelgroup_id)
+        values
+        <foreach collection="travelgroupIds" item="item" separator=",">
+            (#{setmeal_id},#{item})
+        </foreach>
+
+    </insert>
+    <update id="updateSetMeal">
+        update t_setmeal
+        set name=#{name},
+            code=#{code},
+            helpCode=#{helpCode},
+            sex=#{sex},
+            age=#{age},
+            price=#{price},
+            remark=#{remark},
+            attention=#{attention},
+            img=#{img}
+        where id = #{id};
+    </update>
+    <delete id="delSetMealById">
+        delete
+        from t_setmeal
+        where id = #{id};
+    </delete>
+    <delete id="delSetMealAndTravelGroups">
+        delete
+        from t_setmeal_travelgroup
+        where setmeal_id = #{id};
+    </delete>
+    <select id="findSetMealByQueryString" resultType="com.atguigu.pojo.SetMeal">
+        select * from t_setmeal
+        <where>
+            <if test="value!=null and value.length>0">
+                name like concat('%',#{value},'%') or code=#{value} or helpcode = #{value}
+            </if>
+        </where>
+    </select>
+    <select id="getSelectedTravelGroupIds" resultType="java.lang.Integer">
+        select travelgroup_id
+        from t_setmeal_travelgroup
+        where setmeal_id = #{id};
+    </select>
+    <select id="findSetMealById" resultType="com.atguigu.pojo.SetMeal">
+        select *
+        from t_setmeal
+        where id = #{id};
+    </select>
+    <select id="getAllSetMealList" resultType="com.atguigu.pojo.SetMeal">
+        select *
+        from t_setmeal;
+    </select>
+    <resultMap id="SetMealDetailResultMap" type="setMeal">
+        <id property="id" column="setmeal_id"/>
+        <result property="name" column="setmeal_name"/>
+        <result property="remark" column="setmeal_remark"/>
+        <result property="img" column="setmeal_img"/>
+        <result property="sex" column="setmeal_sex"/>
+        <result property="age" column="setmeal_age"/>
+        <collection property="travelGroups" ofType="travelGroup">
+            <id property="id" column="travelgroup_id"/>
+            <result property="name" column="travelgroup_name"/>
+            <result property="remark" column="travelgroup_remark"/>
+            <collection property="travelItems" ofType="travelItem">
+                <id property="id" column="travelitem_id"/>
+                <result property="name" column="travelitem_name"/>
+            </collection>
+        </collection>
+    </resultMap>
+    <select id="findById" resultMap="SetMealDetailResultMap">
+        SELECT ts.id as  setmeal_id,
+               ts.NAME   setmeal_name,
+               ts.remark setmeal_remark,
+               ts.img    setmeal_img,
+               ts.sex    setmeal_sex,
+               ts.age    setmeal_age,
+               tg.id as  travelgroup_id,
+               tg.NAME   travelgroup_name,
+               tg.remark travelgroup_remark,
+               ti.id as  travelitem_id,
+               ti.NAME   travelitem_name
+        FROM t_setmeal ts
+                 LEFT JOIN t_setmeal_travelgroup ttg ON ts.id = ttg.setmeal_id
+                 LEFT JOIN t_travelgroup tg ON ttg.travelgroup_id = tg.id
+                 LEFT JOIN t_travelgroup_travelitem tti ON tg.id = tti.travelgroup_id
+                 LEFT JOIN t_travelitem ti ON ti.id = tti.travelitem_id
+        WHERE ts.id = #{id}
+    </select>
+    <select id="getSetMealDetail" resultType="com.atguigu.pojo.SetMeal">
+        select id, name, sex, age, remark, img
+        from t_setmeal
+        where id = #{id};
+    </select>
+    <select id="getSetmealReport" resultType="java.util.Map">
+        select count(o.setmeal_id) as `value`, s.`name`
+        FROM t_setmeal s,
+             t_order o
+        WHERE s.id = o.setmeal_id
+        GROUP BY o.setmeal_id
+    </select>
+</mapper>

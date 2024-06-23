@@ -1,0 +1,25 @@
+# Compiled class files
+*.class
+
+# Log Files
+*.log
+
+# About IntelliJ
+*.iml
+.idea/
+out/
+target/
+
+# macOS
+.DS_Store/
+
+# Package Files
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# CMake
+cmake-build-debug/
